@@ -3,10 +3,11 @@ import java.util.*;
 enum NodeState {None, Start, End, Closed, Open, Wall, Path}
 
 int gridWidth = 50;
-int gridHeight;
+int gridHeight = 30;
 Node[][] grid;
-float nodeWidth; 
+float nodeWidth = 20; 
 ArrayList<Node> path;
+MazeGenerator generator;
 
 Node start;
 Node end;
@@ -16,15 +17,18 @@ Set<Node> open = new HashSet<Node>();
 Node lastDraggedNode;
 int timeAtLastUpdate = 0;
 int timeSinceLastStep = 0;
-int timeBetweenSteps = 250;
+int timeBetweenSteps = 0;
 
-void settings(){ fullScreen(); }
+//void settings(){ fullScreen(); }
 
 void setup(){
-  //surface.setSize(700,700); stroke(100);
-  gridHeight = gridWidth * height / width;
+  gridWidth -= gridWidth % 9;
+  gridHeight -= gridHeight % 9;
+  surface.setSize((int)(gridWidth * nodeWidth),(int)(gridHeight * nodeWidth));
+  //gridHeight = gridWidth * height / width;
   grid = new Node[gridWidth][gridHeight];
-  nodeWidth = (float) width / gridWidth;
+  //nodeWidth = (float) width / gridWidth;
+  generator = new MazeGenerator(grid);
   
   for(int x = 0; x < gridWidth; x++){
     for(int y = 0; y < gridHeight; y++){
@@ -56,14 +60,14 @@ void draw(){
   }
 }
 
-ArrayList<Node> getSuroundingNodes(Node node){
+ArrayList<Node> getSuroundingNodes(Node node, boolean includeCorners){
   ArrayList<Node> nodes = new ArrayList<Node>();
   Node neighbor;
   for(int x = Math.max(node.x-1,0); x <= Math.min(node.x+1,gridWidth-1); x++) {
     for(int y = Math.max(node.y-1,0); y <= Math.min(node.y+1,gridHeight-1); y++) {
       neighbor = grid[x][y];
-      if((x - node.x) * (y - node.y) != 0) continue;
-      if(neighbor == node || closed.contains(neighbor) || neighbor.state == NodeState.Wall) continue;
+      if(!includeCorners && (x - node.x) * (y - node.y) != 0) continue;
+      if(neighbor == node) continue;
       nodes.add(neighbor);
     }
   }
@@ -95,8 +99,9 @@ void step(){
     println("done");
     this.path = getPath(current);
   }
-  ArrayList<Node> neighbors = getSuroundingNodes(current);
+  ArrayList<Node> neighbors = getSuroundingNodes(current, false);
   for(Node node : neighbors){
+    if(closed.contains(node) || node.state == NodeState.Wall) { continue; }
     int tempG = current.calcDistance(node) + current.getG(); 
     if(!open.contains(node) || tempG < node.getG()) {
       node.setG(Math.min(current.calcDistance(node) + current.g, node.g));
@@ -183,11 +188,12 @@ void mouseWheel(MouseEvent e){
 
 void keyPressed(){
   if(key == ' '){
-    timeBetweenSteps = 0;
+    generator.nextStep();
   } else if(key == 'f'){
     while(path == null){ step(); }
   } else if(key == 'c'){
     resetGrid(false);
-    
+  } else if(key == 'g'){
+    generator.generateMaze(grid[1][1]);
   }
 }
