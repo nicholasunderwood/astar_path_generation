@@ -11,15 +11,24 @@ class MazeGenerator{
   
   
   void step(Node start, Node current) {
-    ArrayList<Node[]> paths = getPaths(current);
-    if(!paths.isEmpty()){
-      Node[] path = paths.get((int)(Math.random()*paths.size()));
-      for(Node node : path){
-        node.setState(NodeState.None);
+    Node dir = current; Node next = current;
+    ArrayList<Node> dirs = getSuroundingNodes(current, false);
+    for(int i = (int) (Math.random() * dirs.size()); dirs.size() > 0; i = (int) (Math.random() * dirs.size())){
+      dir = dirs.get(i);
+      if (dir.y <= 0 || dir.y >= this.grid[0].length-1 || dir.x <= 0 || dir.x >= this.grid.length -1) { dirs.remove(dir); continue; }
+      next = this.grid[dir.x*2 - current.x*1][dir.y*2 - current.y*1];
+      if(visited.contains(next)){
+        dirs.remove(dir);
+      } else {
+        break;
       }
-      this.visited.add(path[1]); this.track.add(path[1]);
-      this.nextNode = path[1];
-      step(start, path[1]);
+    }
+    if(!dirs.isEmpty()){
+      dir.setState(NodeState.None);
+      next.setState(NodeState.None);
+      this.visited.add(next); this.track.add(next);
+      this.nextNode = next;
+      step(start, next);
       return;
     } else {
       current = this.track.remove(this.track.size()-1);
