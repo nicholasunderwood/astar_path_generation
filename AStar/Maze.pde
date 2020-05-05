@@ -17,9 +17,9 @@ class MazeGenerator{
       for(Node node : path){
         node.setState(NodeState.None);
       }
-      this.visited.add(path[2]); this.track.add(path[2]);
-      this.nextNode = path[2];
-      step(start, path[2]);
+      this.visited.add(path[1]); this.track.add(path[1]);
+      this.nextNode = path[1];
+      step(start, path[1]);
       return;
     } else {
       current = this.track.remove(this.track.size()-1);
@@ -52,13 +52,12 @@ class MazeGenerator{
   ArrayList<Node[]> getPaths(Node node){
     ArrayList<Node> dirs = getSuroundingNodes(node, false);
     ArrayList<Node[]> paths = new ArrayList<Node[]>();
-    Node next;
     for(Node dir : dirs){
       if (dir.y <= 0 || dir.y >= this.grid[0].length-1 || dir.x <= 0 || dir.x >= this.grid.length -1) { continue; }
-      Node[] path = new Node[3]; path[0] = dir;
+      Node[] path = new Node[2]; path[0] = dir;
       path[1] = this.grid[dir.x*2 - node.x*1][dir.y*2 - node.y*1];
-      path[2] = this.grid[dir.x*3 - node.x*2][dir.y*3 - node.y*2];
-      if(!visited.contains(path[2])){
+      //path[1] = this.grid[dir.x*3 - node.x*2][dir.y*3 - node.y*2];
+      if(!visited.contains(path[1])){
         paths.add(path);
       }
     }
